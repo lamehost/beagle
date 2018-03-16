@@ -1,0 +1,4 @@
+flask-restplus==0.10.1
+PyYAML==3.12
+Exscript==2.5.7
+Flask-Limiter==1.0.1

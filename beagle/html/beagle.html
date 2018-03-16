@@ -1,0 +1,506 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>BGP Looking Glass</title>
+  <!-- Bootstrap core CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- Roboto -->
+  <link href='//fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <style>
+    #loadingcircle {
+      margin-left: auto;
+      margin-right: auto;
+      border: 16px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 16px solid #212529;
+      width: 120px;
+      height: 120px;
+      -webkit-animation: spin 2s linear infinite; /* Safari */
+      animation: spin 2s linear infinite;
+    }
+
+    /* Safari */
+    @-webkit-keyframes spin {
+      0% { -webkit-transform: rotate(0deg); }
+      100% { -webkit-transform: rotate(360deg); }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body style="font-family: Roboto">
+  <main class="my-5">
+    <div class="container">
+      <div class="md-12 text-center">
+        <h1 class="display-3">BGP Looking Glass</h1>
+      </div>
+    </div>
+    <div class="container bg-dark text-white mw-100 mx-0 px-0 pt-5 pb-2 my-4">
+      <div class="row justify-content-center mx-0 px-0">
+        <div class="col-md-8">
+          <form class="form-inline">
+            <label class="sr-only" for="command">Command</label>
+            <select class="custom-select col-3 mr-3" name="command" id="command">
+              <option value="show bgp ipv4 unicast">Show BGP IPv4 Unicast</option>
+              <option value="show bgp ipv6 unicast">Show BGP IPv6 Unicast</option>
+              <option value="show ipv4 route">Show IPv4 route</option>
+              <option value="show ipv6 route">Show IPv6 route</option>
+              <option value="show bgp ipv4 unicast summary">Show BGP IPv4 Unicast Summary</option>
+              <option value="show bgp ipv6 unicast summary">Show BGP IPv6 Unicast Summary</option>
+              <option value="ping ipv4">Ping IPv4</option>
+              <option value="ping ipv6">Ping IPv6</option>
+              <option value="traceroute ipv4">Traceroute IPv4</option>
+              <option value="traceroute ipv6">Traceroute IPv6</option>
+            </select>
+            <label class="sr-only" for="prefix">IP address or prefix</label>
+            <input type="text" class="form-control col-4 mr-3" placeholder="IP address or prefix" name="prefix" id="prefix" required> on
+            <label class="sr-only" for="router">Router</label>
+            <select class="custom-select col-2 mx-3" name="router" id="router">
+            </select>
+            <label class="form-check-label col-1 mr-4">
+              <input type="checkbox" class="form-check-input" name="loopback" id="loopback" disabled> From Loopback
+            </label>
+            <button type="submit" class="btn btn-light px-3" id="execute">Run</button>
+          </form>
+          <p class="text-center mt-2">
+            <a class="text-white" data-toggle="collapse" href="#help" role="button" aria-expanded="false" aria-controls="help" id="helpLabel">Show Help</a>
+          </p>
+          <div class="collapse my-0" id="help">
+            <div class="infobox my-0">
+              <h2>Help</h2>
+              <p>
+                The BGP Looking Glass allows you to run a limited set of commands (show BGP, ping, traceroute) drirectly on our routers.
+              </p>
+              <p>
+                Select the network and router you are interested in from the dropdown lists, then choose the type of query you want to perform:
+              </p>
+              <ul>
+                <li><strong><em>Show BGP queries</em></strong> allow you to see the routes available on the BGP RIB of the selected router for the specified IP address or prefix.</li>
+                <li><strong><em>Show route queries</em></strong> allow you to see the routes available on the FIB of the selected router for the specified IP address or prefix.</li>
+                <li><strong><em>Ping queries</em></strong> show you the response time between the source address on the selected router and the specified IP address (prefixes are not supported).</li>
+                <li><strong><em>Traceroute queries</em></strong> enable you to view the route taken by packets across an IP network between the source address on the selected router and the destination IP address (prefixes are not supported).</li>
+              </ul>
+              <p>
+                <strong><em>From Loopback</em></strong> allows you to force the selected router to use the IP address on its Loopback instead of that configured on the egress interface toward the destination.
+              </p>
+              <p>
+                When you have selected the command of query and router, and filled the IP address or prefix parameter, press Run.
+              </p>
+              <p>
+                This website also exposes <u><a class="text-white" href="doc/">REST APIs</a></u> loselly based on <a class="text-white" href="https://tools.ietf.org/html/draft-mst-lgapi-07">draft-mst-lgapi-07</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container d-none text-center" id="loader">
+      <div id="loadingcircle"></div>
+      <h5 class="mt-2">Please wait...</h5>
+    </div>
+    <div class="container alert d-none text-center" id="error" role="alert">
+      <h1 class="mb-3 display-4">(╯°□°）╯︵ ┻━┻</h1>
+      <span></span>
+    </div>
+    <div class="container mt-0 d-none" id="output">
+      <div class="mb-4">
+        <div class='btn-toolbar float-right'>
+          <div class='btn-group'>
+            <button type='button' class='btn btn-light' id="copy" data-clipboard-action="copy" data-clipboard-target="#outputlist">Copy</button>
+          </div>
+        </div>
+        <ul class="list-inline" id="outputlist">
+          <!--
+          <li class="list-unstiled"><strong>Command</strong>: <span id="output_command"></span></li>
+          -->
+          <li class="list-unstiled" id="output_status"><strong>Status</strong>: <span></span></li>
+          <li class="list-unstiled" id="output_router"><strong>Router</strong>: <span></span></li>
+          <li class="list-unstiled" id="output_loopback"><strong>From Loopback</strong>: <span></span></li>
+          <li class="list-unstiled" id="output_timestamp"><strong>Timestamp</strong>: <span></span></li>
+          <li class="list-unstiled mt-3" id="output_content"><strong>Output</strong>:
+            <pre></pre>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </main>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+  <script src="https://unpkg.com/tooltip.js@1.2.0/dist/umd/tooltip.js"></script>
+  <script>
+  //
+  // UX Functions
+  //
+
+  // Enable/Disable form input status
+  function toggleFormInputStatus () {
+    var command = $('#command')
+    var prefix = $('#prefix')
+    var router = $('#router')
+    var loopback = $('#loopback')
+
+    if (command.prop('disabled')) {
+      // If command is disabled
+      console.log('Enabling form\'s input fields')
+      command.prop('disabled', false)
+      prefix.prop('disabled', false)
+      router.prop('disabled', false)
+      // Loopback's status depends on command
+      handleCommandValue()
+    } else {
+      // If command is enabled
+      console.log('Disabling form\'s input fields')
+      command.prop('disabled', true)
+      prefix.prop('disabled', true)
+      router.prop('disabled', true)
+      loopback.prop('disabled', true)
+    }
+  }
+
+  // Adjust form input status depending on #command
+  function handleCommandValue () {
+    console.log("Updating form's input fields on a per #command basis")
+    var prefix = $('#prefix')
+    var loopback = $('#loopback')
+
+    var selectedCommand = $('#command option:selected').first().val()
+    switch (selectedCommand) {
+      case 'ping ipv4':
+      case 'ping ipv6':
+        prefix.prop('placeholder', 'IP address').prop('disabled', false)
+        loopback.prop('disabled', false)
+        break
+      case 'traceroute ipv4':
+      case 'traceroute ipv6':
+        prefix.prop('placeholder', 'IP address').prop('disabled', false)
+        loopback.prop('disabled', false)
+        break
+      case 'show bgp ipv4 unicast':
+      case 'show bgp ipv6 unicast':
+      case 'show ipv4 route':
+      case 'show ipv6 route':
+        prefix.prop('placeholder', 'IP address or prefix').prop('disabled', false)
+        loopback.prop('disabled', true)
+        break
+      case 'show bgp ipv4 unicast summary':
+      case 'show bgp ipv6 unicast summary':
+        prefix.prop('disabled', true)
+        loopback.prop('disabled', true)
+        break
+    }
+  }
+
+  // Abort ALL Ajax calls
+  function abortAllAjaxCalls () {
+    $.each(xhrQueue, function (_, jqXHR) {
+      jqXHR.abort()
+    })
+  };
+
+  // Make sure tooltip is showed and behaves correctly
+  function showPrefixTooltip (content) {
+    $('#prefix').prop('disabled', false)
+    $('#prefix').data('content', content)
+    $('#prefix').attr('title', content).tooltip('_fixTitle').tooltip('show')
+    $('#prefix').focus()
+  }
+
+  //
+  // UX
+  //
+  var xhrQueue = []
+
+  $('#command').change(function () {
+    handleCommandValue()
+  })
+
+  $('#execute').click(function (event) {
+    event.preventDefault()
+
+    // Validate Form
+    var form = document.getElementsByTagName('form')[0]
+    if (form.checkValidity() === false) {
+      showPrefixTooltip('Please insert something meaningful here and try again')
+      return
+    }
+
+    var isRunning = $(this).text() !== 'Run'
+    if (isRunning) {
+      abortAllAjaxCalls()
+    } else {
+      toggleFormInputStatus()
+      run()
+    }
+  })
+
+  $('#prefix').keydown(function () {
+    $('#prefix').tooltip('hide')
+  })
+
+  $('#prefix').blur(function () {
+    $('#prefix').tooltip('hide')
+  })
+
+  $('#helpLabel').click(function () {
+    $(this).text($(this).text() === 'Show Help' ? 'Hide Help' : 'Show Help')
+  })
+
+  // Memorize all running Ajax calls
+  $(document).ajaxSend(function (event, jqxhr, settings) {
+    console.log('Pushing Ajax call to the list')
+    xhrQueue.push(jqxhr)
+  })
+
+  // Forget completed Ajax calls
+  $(document).ajaxComplete(function (event, jqxhr, settings) {
+    console.log('Removing Ajax call from the list')
+    var i
+    if ((i = $.inArray(jqxhr, xhrQueue)) > -1) {
+      xhrQueue.splice(i, 1)
+    }
+  })
+
+  $('document').ready(function () {
+    // Populate fields by looking at URL parameters
+    console.log('Reading values from URL')
+    var url = new URL(window.location.href)
+    var command = url.searchParams.get('command')
+    if (command) {
+      $('#command').val(command)
+    }
+    var prefix = url.searchParams.get('prefix')
+    $('#prefix').val(prefix)
+    var loopback = url.searchParams.get('loopback') === 1
+    $('#loopback').prop('checked', loopback)
+
+    // Load available routers on startup
+    var selectedRouter = url.searchParams.get('router')
+    console.log('Updating the list of available routers')
+    $.getJSON('api/v1/routers', function (data) {
+      var routers = data['data']['routers']
+      $.each(routers, function (routerId, router) {
+        $.each(router['vrfs'], function (vrfId, vrf) {
+          var dataValue = {
+            'router': router['id'],
+            'vrf': vrf
+          }
+          var label = ''
+          if (vrf === 'global') {
+            label = router['name']
+          } else {
+            label = router['name'] + ' VRF ' + vrf
+          }
+          if (selectedRouter === label) {
+            $('#router').append(
+              "<option data-value='" + JSON.stringify(dataValue) + "' selected>" + label + '</option>'
+            )
+          } else {
+            $('#router').append(
+              "<option data-value='" + JSON.stringify(dataValue) + "'>" + label + '</option>'
+            )
+          }
+        })
+      })
+    }).done(function () {
+      if (command) {
+        toggleFormInputStatus()
+        run()
+      }
+    })
+  })
+
+  var clipboard = new ClipboardJS('#copy')
+
+  $('#copy').tooltip({
+    title: 'Copied to clipboard',
+    trigger: 'manual',
+    placement: 'top'
+  })
+
+  $('#prefix').tooltip({
+    title: 'Please insert something here and try again',
+    trigger: 'manual',
+    placement: 'top'
+  })
+
+  clipboard.on('success', function (e) {
+    $('#copy').attr(
+      'title', 'Copied to clipboard'
+    ).tooltip('_fixTitle').tooltip('show')
+    setTimeout(function () { $('#copy').tooltip('hide') }, 500)
+    e.clearSelection()
+  })
+
+  clipboard.on('error', function (e) {
+    $('#copy').attr(
+      'title', '¯\\_(ツ)_/¯ Unable to copy'
+    ).tooltip('_fixTitle').tooltip('show')
+    setTimeout(function () { $('#copy').tooltip('hide') }, 500)
+    e.clearSelection()
+  })
+
+  //
+  // API Client
+  //
+
+  function run () {
+    // Collect input fields values
+    var request = ''
+    var prefix = $('#prefix').val()
+    var vrf = $('#router option:selected').first().data('value').vrf
+    var command = $('#command option:selected').first().val()
+    var afi = 0
+    var safi = 1
+
+    var siteUrl = document.location.href.split('?')[0] + '?' + $.param({
+      'command': command,
+      'prefix': prefix,
+      'router': $('#router option:selected').first().val(),
+      'loopback': $('#loopback').prop('checked') ? 1 : 0
+    })
+    window.history.pushState({}, document.title, siteUrl)
+
+    switch (command) {
+      case 'show bgp ipv4 unicast':
+        afi = 1
+        request = 'api/v1/show/bgp/' + prefix
+        break
+      case 'show bgp ipv6 unicast':
+        afi = 2
+        request = 'api/v1/show/bgp/' + prefix
+        break
+      case 'show ipv4 route':
+        afi = 1
+        request = 'api/v1/show/route/' + prefix
+        break
+      case 'show ipv6 route':
+        afi = 2
+        request = 'api/v1/show/route/' + prefix
+        break
+      case 'show bgp ipv4 unicast summary':
+        afi = 1
+        request = 'api/v1/show/bgp/summary'
+        break
+      case 'show bgp ipv6 unicast summary':
+        afi = 2
+        request = 'api/v1/show/bgp/summary'
+        break
+      case 'ping ipv4':
+        afi = 1
+        request = 'api/v1/ping/' + prefix
+        break
+      case 'ping ipv6':
+        afi = 2
+        request = 'api/v1/ping/' + prefix
+        break
+      case 'traceroute ipv4':
+        afi = 1
+        request = 'api/v1/traceroute/' + prefix
+        break
+      case 'traceroute ipv6':
+        afi = 2
+        request = 'api/v1/traceroute/' + prefix
+        break
+    }
+
+    // Build the URL
+    var jsonUrl = request + '?' + $.param({
+      'id': $('#router option:selected').first().data('value').router,
+      'vrf': vrf,
+      'loopback': $('#loopback').prop('checked') ? 1 : 0,
+      'afi': afi,
+      'safi': safi
+    })
+
+    $.ajax({
+      dataType: 'json',
+      url: jsonUrl,
+      beforeSend: function () {
+        abortAllAjaxCalls()
+        // Update UI
+        $('#output').addClass('d-none')
+        $('#error').addClass('d-none')
+        $('#execute').first().text('Abort')
+        $('#loader').removeClass('d-none')
+        console.log('Sending request to the server')
+      }
+    }).done(function (data) {
+      console.log('Got response from the server')
+      // $("#output_command").html("")
+      $('#output_status span').html(data['status'])
+      $('#output_router').removeClass('d-none')
+      $('#output_router span').html(data['data']['router'])
+      // Loopback is optional
+      if (data.hasOwnProperty('loopback')) {
+        $('#output_loopback').removeClass('d-none')
+        $('#output_loopback span').html(data['data']['loopback'] ? 'True' : 'False')
+      } else {
+        $('#output_loopback').addClass('d-none')
+      }
+      $('#output_timestamp').removeClass('d-none')
+      $('#output_timestamp span').html(data['data']['performed_at'])
+      $('#output_content pre').html(data['data']['output'])
+
+      $('#output').removeClass('d-none')
+    }).fail(function (jqXHR) {
+      // Update UI
+      var data = jqXHR.responseJSON
+      switch (jqXHR.status) {
+        case 0:
+          // Abort() called by user
+          break
+        case 400:
+        case 404:
+          console.log('Server said the request was not valid')
+          showPrefixTooltip("Server didn't like the value. Please insert something meaningful here and try again")
+          break
+        case 429:
+          console.log('Too many requests')
+          $('#error span').html('Hey, what are you up to? Slow down!')
+          $('#error').removeClass('d-none')
+          break
+        case 502:
+          console.log('Router returned an error')
+          $('#output_loopback').addClass('d-none')
+          $('#output_timestamp').addClass('d-none')
+          $('#output_router').addClass('d-none')
+
+          $('#output_status span').html(data['status'])
+          $('#output_content pre').html(data['message'])
+
+          $('#output').removeClass('d-none')
+          break
+        case 504:
+          console.log('Command timed out')
+          $('#error span').html('Command timed out on the router')
+          $('#error').removeClass('d-none')
+          break
+        default:
+          console.log('Something went wrong with the server')
+          $('#error span').html('Something went wrong with the server')
+          $('#error').removeClass('d-none')
+      }
+    }).always(function () {
+      // Update UI
+      $('#loader').addClass('d-none')
+      toggleFormInputStatus()
+      $('#execute').text('Run')
+    })
+  }
+  </script>
+</body>
+
+</html>
