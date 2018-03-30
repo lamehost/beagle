@@ -170,6 +170,18 @@ properties:
             - min
             - max
         additionalProperties: False
+    commands:
+        type: array
+        items:
+            type: string
+        default:
+            
+            - ping
+            - traceroute
+            - show route
+            - show bgp summary
+            - show bgp neighbors
+            - show bgp
 required:
     - username
     - password

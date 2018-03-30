@@ -279,6 +279,9 @@ class Ping(Resource):
         with beagle.app_context():
             config = current_app.config
 
+        if 'ping' not in config['commands']:
+            beagle_api.abort(404, "Command disabled")
+
         # Validate input
         validate_address(address)
 
@@ -339,6 +342,9 @@ class Traceroute(Resource):
         args = parser.parse_args()
         with beagle.app_context():
             config = current_app.config
+
+        if 'traceroute' not in config['commands']:
+            beagle_api.abort(404, "Command disabled")
 
         # Validate input
         validate_address(address)
@@ -402,6 +408,9 @@ class ShowRoute(Resource):
         with beagle.app_context():
             config = current_app.config
 
+        if 'show route' not in config['commands']:
+            beagle_api.abort(404, "Command disabled")
+
         # Validate input
         validate_address(address)
 
@@ -453,6 +462,9 @@ class ShowBgpSummary(Resource):
         with beagle.app_context():
             config = current_app.config
 
+        if 'show bgp summary' not in config['commands']:
+            beagle_api.abort(404, "Command disabled")
+
         if args['runtime'] > config['runtime']['max'] or \
             args['runtime'] < config['runtime']['min']:
             raise SyntaxError("Invalid runtime value: %(runtime)d" % args)
@@ -500,6 +512,9 @@ class ShowBgpNeighbors(Resource):
         args = parser.parse_args()
         with beagle.app_context():
             config = current_app.config
+
+        if 'show bgp neighbors' not in config['commands']:
+            beagle_api.abort(404, "Command disabled")
 
         # Validate input
         validate_address(address)
@@ -552,6 +567,9 @@ class ShowBgp(Resource):
         args = parser.parse_args()
         with beagle.app_context():
             config = current_app.config
+
+        if 'show bgp' not in config['commands']:
+            beagle_api.abort(404, "Command disabled")
 
         # Validate input
         validate_address(address)
@@ -630,7 +648,7 @@ class RouterById(Resource):
 
         return result
 
-#TODO
+# TODO
 @ns.route('/v1/commands')
 class CommandsList(Resource):
     @ns.marshal_with(router_commands_model)
