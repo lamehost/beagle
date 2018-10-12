@@ -48,10 +48,10 @@
     </div>
     <div class="container bg-dark text-white mw-100 mx-0 px-0 pt-5 pb-2 my-4">
       <div class="row justify-content-center mx-0 px-0">
-        <div class="col-md-8">
-          <form class="form-inline">
+        <div class="col-md-10">
+          <form class="form-inline justify-content-center">
             <label class="sr-only" for="command">Command</label>
-            <select class="custom-select col-3 mr-3" name="command" id="command">
+            <select class="custom-select col-3 mr-2" name="command" id="command">
               <option value="show bgp ipv4 unicast">Show BGP IPv4 Unicast</option>
               <option value="show bgp ipv6 unicast">Show BGP IPv6 Unicast</option>
               <option value="show ipv4 route">Show IPv4 route</option>
@@ -64,14 +64,14 @@
               <option value="traceroute ipv6">Traceroute IPv6</option>
             </select>
             <label class="sr-only" for="prefix">IP address or prefix</label>
-            <input type="text" class="form-control col-4 mr-3" placeholder="IP address or prefix" name="prefix" id="prefix" required> on
+            <input type="text" class="form-control col-4 mx-2" placeholder="IP address or prefix" name="prefix" id="prefix" required> on
             <label class="sr-only" for="router">Router</label>
-            <select class="custom-select col-2 mx-3" name="router" id="router">
+            <select class="custom-select col-2 mx-2" name="router" id="router">
             </select>
-            <label class="form-check-label col-1 mr-4">
-              <input type="checkbox" class="form-check-input" name="loopback" id="loopback" disabled> From Loopback
+            <label class="form-check-label ml-1 mr-2">
+              <input type="checkbox" class="form-check-input" name="loopback" id="loopback" disabled> From<br/>Loopback
             </label>
-            <button type="submit" class="btn btn-light px-3" id="execute">Run</button>
+            <button type="submit" class="btn btn-light ml-2 px-3" id="execute">Run</button>
           </form>
           <p class="text-center mt-2">
             <a class="text-white" data-toggle="collapse" href="#help" role="button" aria-expanded="false" aria-controls="help" id="helpLabel">Show Help</a>
