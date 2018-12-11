@@ -315,7 +315,8 @@ class Ping(Resource):
             username=config['username'],
             password=config['password'],
             findreplace=findreplace,
-            timeout=args['runtime']
+            timeout=args['runtime'],
+            transport=router['transport']
         ) as device:
             output = device.ping(address, args['vrf'], args['afi'], args['safi'], loopback)
 
@@ -379,7 +380,8 @@ class Traceroute(Resource):
             username=config['username'],
             password=config['password'],
             findreplace=findreplace,
-            timeout=args['runtime']
+            timeout=args['runtime'],
+            transport=router['transport']
         ) as device:
             output = device.traceroute(address, args['vrf'], args['afi'], args['safi'], loopback)
 
@@ -435,7 +437,8 @@ class ShowRoute(Resource):
             username=config['username'],
             password=config['password'],
             findreplace=findreplace,
-            timeout=args['runtime']
+            timeout=args['runtime'],
+            transport=router['transport']
         ) as device:
             output = device.show_route(address, args['vrf'], args['afi'], args['safi'])
 
@@ -486,7 +489,8 @@ class ShowBgpSummary(Resource):
             username=config['username'],
             password=config['password'],
             findreplace=findreplace,
-            timeout=args['runtime']
+            timeout=args['runtime'],
+            transport=router['transport']
         ) as device:
             output = device.show_bgp_summary(args['vrf'], args['afi'], args['safi'])
 
@@ -540,7 +544,8 @@ class ShowBgpNeighbors(Resource):
             username=config['username'],
             password=config['password'],
             findreplace=findreplace,
-            timeout=args['runtime']
+            timeout=args['runtime'],
+            transport=router['transport']
         ) as device:
             output = device.show_bgp_neighbors(address, args['vrf'], args['afi'], args['safi'])
 
@@ -595,7 +600,8 @@ class ShowBgp(Resource):
             username=config['username'],
             password=config['password'],
             findreplace=findreplace,
-            timeout=args['runtime']
+            timeout=args['runtime'],
+            transport=router['transport']
         ) as device:
             output = device.show_bgp(address, args['vrf'], args['afi'], args['safi'])
 

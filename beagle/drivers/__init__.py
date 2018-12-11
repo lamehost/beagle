@@ -15,6 +15,7 @@ import sys
 
 from Exscript import Account
 from Exscript.protocols import SSH2
+from Exscript.protocols import Telnet
 from Exscript.protocols.exception import InvalidCommandException
 
 from beagle.drivers.errors import CommandError, ConnectionError, LoginError
@@ -82,6 +83,7 @@ class BeagleDriver(object):
         self.findreplace = kwargs.get('findreplace', [])
         self.error_re = kwargs.get('error_re', None)
         self.timeout = kwargs.get('timeout', None)
+        self.transport = kwargs.get('transport', None)
 
         self.device = None
 
@@ -163,6 +165,7 @@ class BeagleDriver(object):
         drivername = kwargs.get('drivername', self.drivername)
         username_prompt = kwargs.get('username_prompt', self.username_prompt)
         password_prompt = kwargs.get('password_prompt', self.password_prompt)
+        transport = kwargs.get('transport', self.transport)
 
         self.drivername = drivername
         self.hostname = hostname
@@ -170,8 +173,16 @@ class BeagleDriver(object):
         self.password = password
         self.username_prompt = username_prompt
         self.password_prompt = password_prompt
+        self.transport = transport
 
-        self.device = SSH2()
+        transport = str(transport).lower()
+        if transport == "ssh":
+            self.device = SSH2()
+        elif transport == 'telnet':
+            self.device = Telnet()
+        else:
+            raise RuntimeError('Unrecognized transport protocol: %s' % self.transport)
+
         self.device.set_driver(drivername)
         self.device.set_username_prompt(username_prompt)
         self.device.set_password_prompt(password_prompt)
@@ -193,15 +204,9 @@ class BeagleDriver(object):
 
         # Authenticate
         try:
-            self.device._paramiko_auth_password(username, password)
+            self.device.login(Account(self.username, self.password))
         except:
             raise LoginError(hostname)
-        self.device.proto_authenticated = True
-
-        # Create a shell
-        self.device._paramiko_shell()
-        # Sync writer and listener
-        self.device.expect(next(iter([_.pattern for _ in self.device.get_prompt()])))
 
         # Init terminal length and width
         self.device.autoinit()
@@ -349,3 +354,4 @@ class BeagleDriver(object):
             Actual function will return output of the show bgp summary command modified by sub()
         """
         raise RuntimeError('Not implemented yet')
+

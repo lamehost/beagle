@@ -1,4 +1,3 @@
-
 title: Configuration
 type: object
 properties: 
@@ -79,6 +78,13 @@ properties:
                     minimum: 1
                     maximum: 4294967296
                     description: The ASN of the router
+                transport:
+                    type: string
+                    default: ssh
+                    description: Transport protocol to connect to the device
+                    enum:
+                        - ssh
+                        - telnet
             required: 
                 - name
                 - formats
