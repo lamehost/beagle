@@ -27,6 +27,18 @@ class ConnectionError(Exception):
     def __repr__(self):
         return "%s: %s" % (self.__name__, "Unable to connect to remote host: %s" % self.router)
 
+class DriverError(Exception):
+    def __init__(self, driver):
+        self.driver = driver
+        self.timestamp = datetime.utcnow()
+        self.code = 500
+
+    def __str__(self):
+        return repr("Unable to instantiate driver")
+
+    def __repr__(self):
+        return "%s: %s" % (self.__name__, "Unable to instantiate driver: %s" % self.driver)
+
 class LoginError(Exception):
     def __init__(self, router):
         self.router = router
