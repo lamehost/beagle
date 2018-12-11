@@ -16,7 +16,7 @@ from flask_limiter.util import get_remote_address
 from flask_limiter.errors import RateLimitExceeded
 
 from beagle.drivers import get_driver
-from beagle.drivers.errors import ConnectionError, LoginError, CommandError
+from beagle.drivers.errors import ConnectionError, LoginError, CommandError, DriverError
 
 
 def validate_address(address):
@@ -300,7 +300,7 @@ class Ping(Resource):
                 loopback = next(iter(([_['loopback'] for _ in router['vrfs'] if _['name'] == args['vrf']])))
             except (IndexError, StopIteration):
                 raise SyntaxError(
-                    "'Invalid vrf table name: %(vrf)s" % args
+                    "Invalid vrf table name: %(vrf)s" % args
                 )
 
         findreplace = []
@@ -309,6 +309,8 @@ class Ping(Resource):
 
         driver_name = next(iter(_['driver'] for _ in router['formats'] if args['format'] == _['format']))
         driver = get_driver(driver_name)
+        if not driver:
+            raise DriverError(driver_name)
         with driver(
             'text/plain',
             hostname=router['address'],
@@ -369,11 +371,13 @@ class Traceroute(Resource):
                 loopback = next(iter(([_['loopback'] for _ in router['vrfs'] if _['name'] == args['vrf']])))
             except (IndexError, StopIteration):
                 raise SyntaxError(
-                    "'Invalid vrf table name: %(vrf)s" % args
+                    "Invalid vrf table name: %(vrf)s" % args
                 )
 
         driver_name = next(iter(_['driver'] for _ in router['formats'] if args['format'] == _['format']))
         driver = get_driver(driver_name)
+        if not driver:
+            raise DriverError(driver_name)
         with driver(
             'text/plain',
             hostname=router['address'],
@@ -431,6 +435,8 @@ class ShowRoute(Resource):
 
         driver_name = next(iter(_['driver'] for _ in router['formats'] if args['format'] == _['format']))
         driver = get_driver(driver_name)
+        if not driver:
+            raise DriverError(driver_name)
         with driver(
             'text/plain',
             hostname=router['address'],
@@ -483,6 +489,8 @@ class ShowBgpSummary(Resource):
 
         driver_name = next(iter(_['driver'] for _ in router['formats'] if args['format'] == _['format']))
         driver = get_driver(driver_name)
+        if not driver:
+            raise DriverError(driver_name)
         with driver(
             'text/plain',
             hostname=router['address'],
@@ -538,6 +546,8 @@ class ShowBgpNeighbors(Resource):
 
         driver_name = next(iter(_['driver'] for _ in router['formats'] if args['format'] == _['format']))
         driver = get_driver(driver_name)
+        if not driver:
+            raise DriverError(driver_name)
         with driver(
             'text/plain',
             hostname=router['address'],
@@ -594,6 +604,8 @@ class ShowBgp(Resource):
 
         driver_name = next(iter(_['driver'] for _ in router['formats'] if args['format'] == _['format']))
         driver = get_driver(driver_name)
+        if not driver:
+            raise DriverError(driver_name)
         with driver(
             'text/plain',
             hostname=router['address'],
