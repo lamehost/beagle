@@ -212,7 +212,7 @@ class BeagleDriver(object):
 
         # Authenticate
         try:
-            self.device.authenticate(Account(self.username, self.password))
+            self.device.login(Account(self.username, self.password))
         except:
             raise LoginError(hostname)
 
