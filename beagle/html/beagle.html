@@ -43,37 +43,53 @@
   <main class="my-5">
     <div class="container">
       <div class="md-12 text-center">
-        <h1 class="display-3">BGP Looking Glass</h1>
+        <h1>BGP Looking Glass</h1>
       </div>
     </div>
-    <div class="container bg-dark text-white mw-100 mx-0 px-0 pt-5 pb-2 my-4">
-      <div class="row justify-content-center mx-0 px-0">
-        <div class="col-md-10">
-          <form class="form-inline justify-content-center">
-            <label class="sr-only" for="command">Command</label>
-            <select class="custom-select col-3 mr-2" name="command" id="command">
-              <option value="show bgp ipv4 unicast">Show BGP IPv4 Unicast</option>
-              <option value="show bgp ipv6 unicast">Show BGP IPv6 Unicast</option>
-              <option value="show ipv4 route">Show IPv4 route</option>
-              <option value="show ipv6 route">Show IPv6 route</option>
-              <option value="show bgp ipv4 unicast summary">Show BGP IPv4 Unicast Summary</option>
-              <option value="show bgp ipv6 unicast summary">Show BGP IPv6 Unicast Summary</option>
-              <option value="ping ipv4">Ping IPv4</option>
-              <option value="ping ipv6">Ping IPv6</option>
-              <option value="traceroute ipv4">Traceroute IPv4</option>
-              <option value="traceroute ipv6">Traceroute IPv6</option>
-            </select>
-            <label class="sr-only" for="prefix">IP address or prefix</label>
-            <input type="text" class="form-control col-4 mx-2" placeholder="IP address or prefix" name="prefix" id="prefix" required> on
-            <label class="sr-only" for="router">Router</label>
-            <select class="custom-select col-2 mx-2" name="router" id="router">
-            </select>
-            <label class="form-check-label ml-1 mr-2">
-              <input type="checkbox" class="form-check-input" name="loopback" id="loopback" disabled> From<br/>Loopback
-            </label>
-            <button type="submit" class="btn btn-light ml-2 px-3" id="execute">Run</button>
+    <div class="container bg-dark text-white">
+      <div class="row justify-content-center">
+        <div class="col-md-12">
+          <form class="py-3">
+            <div class="form-row align-items-center px-2">
+              <div class="col-sm-3 my-1">
+                <label class="sr-only" for="command">Command</label>
+                <select class="custom-select" name="command" id="command">
+                  <option value="show bgp ipv4 unicast">Show BGP IPv4 Unicast</option>
+                  <option value="show bgp ipv6 unicast">Show BGP IPv6 Unicast</option>
+                  <option value="show ipv4 route">Show IPv4 route</option>
+                  <option value="show ipv6 route">Show IPv6 route</option>
+                  <option value="show bgp ipv4 unicast summary">Show BGP IPv4 Unicast Summary</option>
+                  <option value="show bgp ipv6 unicast summary">Show BGP IPv6 Unicast Summary</option>
+                  <option value="ping ipv4">Ping IPv4</option>
+                  <option value="ping ipv6">Ping IPv6</option>
+                  <option value="traceroute ipv4">Traceroute IPv4</option>
+                  <option value="traceroute ipv6">Traceroute IPv6</option>
+                </select>
+              </div>
+              <div class="col-sm-3 my-1">
+                <label class="sr-only" for="prefix">IP address or prefix</label>
+                <input type="text" class="form-control" placeholder="IP address or prefix" name="prefix" id="prefix" required>
+              </div>
+              <span class="text-center mx-1 align-bottom">
+                on
+              </span>
+              <div class="col-sm-3 my-1">
+                <label class="sr-only" for="router">Router</label>
+                <select class="custom-select" name="router" id="router">
+                </select>
+              </div>
+              <div class="col-sm-1 my-1 mr-4">
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" name="loopback" id="loopback" disabled>
+                  <label class="form-check-label">From Loopback</label>
+                </div>
+              </div>
+              <div class="col-auto my-1">
+                <button type="submit" class="btn btn-light" id="execute">Run</button>
+              </div>
+            </div>
           </form>
-          <p class="text-center mt-2">
+          <p class="text-center">
             <a class="text-white" data-toggle="collapse" href="#help" role="button" aria-expanded="false" aria-controls="help" id="helpLabel">Show Help</a>
           </p>
           <div class="collapse my-0" id="help">
