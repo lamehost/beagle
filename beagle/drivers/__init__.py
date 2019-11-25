@@ -13,10 +13,15 @@ import importlib
 import re
 import sys
 
+try:
+    from StringIO import StringIO # Python 2
+except ImportError:
+    from io import StringIO # Python 3
+
 from Exscript import Account
 from Exscript.protocols import SSH2
 from Exscript.protocols import Telnet
-from Exscript.protocols.exception import InvalidCommandException
+from Exscript.protocols.exception import InvalidCommandException, DriverReplacedException
 
 from beagle.drivers.errors import CommandError, ConnectionError, LoginError
 
@@ -84,6 +89,7 @@ class BeagleDriver(object):
         self.error_re = kwargs.get('error_re', None)
         self.timeout = kwargs.get('timeout', None)
         self.transport = kwargs.get('transport', None)
+        self.incremental_buffer = kwargs.get('incremental_buffer', StringIO())
 
         self.device = None
 
@@ -166,6 +172,7 @@ class BeagleDriver(object):
         username_prompt = kwargs.get('username_prompt', self.username_prompt)
         password_prompt = kwargs.get('password_prompt', self.password_prompt)
         transport = kwargs.get('transport', self.transport)
+        incremental_buffer = kwargs.get('incremental_buffer', self.incremental_buffer)
 
         self.drivername = drivername
         self.hostname = hostname
@@ -174,6 +181,7 @@ class BeagleDriver(object):
         self.username_prompt = username_prompt
         self.password_prompt = password_prompt
         self.transport = transport
+        self.incremental_buffer = incremental_buffer
 
         transport = str(transport).lower()
         if transport == "ssh":
@@ -204,7 +212,7 @@ class BeagleDriver(object):
 
         # Authenticate
         try:
-            self.device.login(Account(self.username, self.password))
+            self.device.authenticate(Account(self.username, self.password))
         except:
             raise LoginError(hostname)
 
@@ -248,9 +256,16 @@ class BeagleDriver(object):
         if not self.device or not self.device.proto_authenticated:
             self.open(**kwargs)
 
+        def event_handler(arg):
+            self.incremental_buffer.write(arg)
+
         try:
+            # Connect a data event listener
+            self.device.data_received_event.connect(event_handler)
             self.device.execute(command)
             result = self.device.response
+            # Disconnect data event listener
+            self.device.data_received_event.disconnect(event_handler)
         except InvalidCommandException:
             raise CommandError(self.hostname, self.device.response)
 
@@ -354,4 +369,3 @@ class BeagleDriver(object):
             Actual function will return output of the show bgp summary command modified by sub()
         """
         raise RuntimeError('Not implemented yet')
-
