@@ -35,7 +35,7 @@ def main():
     config = {}
     try:
         config = get_config(args.config)
-    except (IOError, SyntaxError), error:
+    except (IOError, SyntaxError) as error:
         sys.exit(error)
 
     with beagle.app_context():

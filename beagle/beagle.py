@@ -19,6 +19,12 @@ from beagle.drivers import get_driver
 from beagle.drivers.errors import ConnectionError, LoginError, CommandError, DriverError
 
 
+try:
+    text = unicode
+except NameError:
+    text = str.encode
+
+
 def validate_address(address):
     # Check if it's an hostname
     try:
@@ -60,11 +66,11 @@ def index_html():
         webpage = current_app.config['webpage']
         try:
             with open(webpage) as stream:
-                content = stream.read().decode('utf-8')
+                content = stream.read()
         except IOError:
             base_dir = os.path.dirname(os.path.realpath(__file__))
             with open(os.path.join(base_dir, webpage)) as stream:
-                content = stream.read().decode('utf-8')
+                content = stream.read()
 
     return render_template_string(content, data=data)
 
@@ -184,7 +190,7 @@ parser.add_argument(
 
 parser.add_argument(
     'vrf',
-    type=unicode,
+    type=text,
     required=False,
     location='args',
     help='Restrict the command and method parameters to use the specified VRF',
@@ -214,7 +220,7 @@ parser.add_argument(
 
 parser.add_argument(
     'random',
-    type=unicode,
+    type=text,
     required=False,
     location='args',
     help='Ignored random string to prevent the client or an intermediate proxy from caching the response',
@@ -234,7 +240,7 @@ parser.add_argument(
 
 parser.add_argument(
     'format',
-    type=unicode,
+    type=text,
     required=False,
     location='args',
     help='Request the server to provide the output in one of the specified formats (divided by comma)',
@@ -634,7 +640,7 @@ class RouterList(Resource):
         with beagle.app_context():
             routers = current_app.config['routers']
 
-        for _ in xrange(len(routers)):
+        for _ in range(len(routers)):
             routers[_]['id'] = _ + 1
 
         result = {
