@@ -31,7 +31,7 @@ setup(
 	include_package_data=True,
 	entry_points={
 		'console_scripts': [
-			'%s = %s.cli:main' % (this_package.__name__, this_package.__name__),
+			'%s = %s.__main__:main' % (this_package.__name__, this_package.__name__),
 		],
 	},
 	long_description=README,
