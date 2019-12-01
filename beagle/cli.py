@@ -6,13 +6,14 @@ The only function is main()
 
 from __future__ import absolute_import
 
+import os
 import sys
 import argparse
 
 from flask import current_app
 
 from beagle.beagle import beagle
-from beagle.configuration import get_config
+from schemed_yaml_config import get_config
 
 def main():
     """
@@ -33,8 +34,11 @@ def main():
 
     # Read configuration
     config = {}
+    schema_file = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'configuration.yml'
+    )
     try:
-        config = get_config(args.config)
+        config = get_config(args.config, schema_file)
     except (IOError, SyntaxError) as error:
         sys.exit(error)
 
