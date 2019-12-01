@@ -7,7 +7,7 @@ from __future__ import absolute_import
 import os
 
 from flask import current_app
-from beagle.configuration import get_config
+from schemed_yaml_config import get_config
 from beagle.beagle import beagle as application
 
 # Get config file
@@ -19,7 +19,10 @@ if not os.path.isabs(config_file):
     config_file = os.path.join(basedir, config_file)
 
 # Read config
-config = get_config(config_file)
+schema_file = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)), 'configuration.yml'
+)
+config = get_config(config_file, schema_file)
 
 # Configure app
 with application.app_context():
