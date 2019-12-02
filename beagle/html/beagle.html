@@ -51,7 +51,7 @@
         <div class="col-md-10">
           <form class="pt-3 pb-2">
             <div class="form-row align-items-center px-2">
-              <div class="col-sm-3 my-1">
+              <div class="col-md-3 my-1">
                 <label class="sr-only" for="command">Command</label>
                 <select class="custom-select" name="command" id="command">
                   <option value="show bgp ipv4 unicast">Show BGP IPv4 Unicast</option>
@@ -66,25 +66,25 @@
                   <option value="traceroute ipv6">Traceroute IPv6</option>
                 </select>
               </div>
-              <div class="col-sm-3 my-1">
+              <div class="col-md-3 my-1">
                 <label class="sr-only" for="prefix">IP address or prefix</label>
                 <input type="text" class="form-control" placeholder="IP address or prefix" name="prefix" id="prefix" required>
               </div>
               <span class="text-center mx-1 align-bottom">
                 on
               </span>
-              <div class="col-sm-3 my-1">
+              <div class="col-md-3 my-1">
                 <label class="sr-only" for="router">Router</label>
                 <select class="custom-select" name="router" id="router">
                 </select>
               </div>
-              <div class="col-sm-1 my-1 mr-4">
+              <div class="col my-1">
                 <div class="form-check">
                   <input type="checkbox" class="form-check-input" name="loopback" id="loopback" disabled>
                   <label class="form-check-label">From Loopback</label>
                 </div>
               </div>
-              <div class="col-auto my-1">
+              <div class="col my-1 text-right">
                 <button type="submit" class="btn btn-light" id="execute">Run</button>
               </div>
             </div>
